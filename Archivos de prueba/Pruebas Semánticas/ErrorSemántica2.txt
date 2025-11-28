@@ -1,0 +1,6 @@
+int main(){
+bool y = true;
+int x = 2;
+int z = x * y; //deben ser 2 enteros
+return z;
+}

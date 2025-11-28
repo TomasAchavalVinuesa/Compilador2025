@@ -1,0 +1,23 @@
+int main(){
+	//Comentario
+	var int limite = 20;
+	int suma = 0; //Comentario de linea
+	var int contador;
+	contador =1;
+	var bool continuar = true;
+	int calculoComplejo;
+
+	while(continuar && contador<100){
+		if(contador % 2 == 0) then{
+			suma = suma + contador;
+		}else{
+			int nada = 0; 
+		}
+		contador = contador + (5*2 -10/1 +1)-1;
+		if(contador > limite) then{
+			continuar =false;
+		}
+	}
+	calculoComplejo = suma --50;
+	return calculoComplejo;
+}

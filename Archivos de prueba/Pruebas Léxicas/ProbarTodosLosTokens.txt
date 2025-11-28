@@ -1,0 +1,15 @@
+//acá solo debería funcionar el analizador léxico sin dar error
+//Comentario
+int bool void main return var
+if then else while
+true false
++ - * / %
+&& || !
+> < == =
+( ) { } ;
+contador_1 //Comentario2
+variableX
+_privada
+123456
+0
+2147483647

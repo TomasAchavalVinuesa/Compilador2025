@@ -1,0 +1,2 @@
+//esto debería dar Error
+var int 1variable;
