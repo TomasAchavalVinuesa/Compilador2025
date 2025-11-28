@@ -1,0 +1,80 @@
+Reader lector = new BufferedReader(new FileReader(chooser.getSelectedFile()));
+            Lexer lexer = new Lexer(lector);
+            String resultado = "";
+            while(true){
+                Tokens tokens = lexer.yylex();
+                if(tokens == null){
+                    resultado += "FIN";
+                    txtAnalizarArchivoLex.setText(resultado);
+                    return;
+                }
+                switch (tokens){
+                    case ERROR:
+                        resultado += lexer.lexeme + ": Simbolo no definido\n";
+                        break;
+                    case Int:
+                        resultado += lexer.lexeme + ": Es una declaración de entero \n";
+                        break;
+                    case Bool:
+                        resultado += lexer.lexeme + ": Es una declaración de booleano \n";
+                        break;
+                    case Void:
+                        resultado += lexer.lexeme + ": Es un void \n";
+                        break;
+                    case Main:
+                        resultado += lexer.lexeme + ": Es un main \n";
+                        break;
+                    case Return:
+                        resultado += lexer.lexeme + ": Es un return \n";
+                        break;
+                    case True:
+                        resultado += lexer.lexeme + ": Es un true \n";
+                        break;
+                    case False:
+                        resultado += lexer.lexeme + ": Es un false \n";
+                        break;
+                    case Linea:
+                        resultado += lexer.lexeme + ": Es una Linea nueva \n";
+                        break;
+                    case Igual:
+                        resultado += lexer.lexeme + ": Es un igual \n";
+                        break;
+                    case Suma:
+                        resultado += lexer.lexeme + ": Es una suma \n";
+                        break;
+                    case Resta:
+                        resultado += lexer.lexeme + ": Es una resta \n";
+                        break;
+                    case Multiplicacion:
+                        resultado += lexer.lexeme + ": Es una multiplicación \n";
+                        break;
+                    case Division:
+                        resultado += lexer.lexeme + ": Es una división \n";
+                        break;
+                    case ParentesisAbre:
+                        resultado += lexer.lexeme + ": Es un paréntesis de apertura\n";
+                        break;
+                    case ParentesisCierra:
+                        resultado += lexer.lexeme + ": Es un paréntesis de cierre\n";
+                        break;
+                    case PuntoYComa:
+                        resultado += lexer.lexeme + ": Es un punto y coma\n";
+                        break;
+                    case LlaveAbre:
+                        resultado += lexer.lexeme + ": Es una llave de apertura\n";
+                        break;
+                    case LlaveCierra:
+                        resultado += lexer.lexeme + ": Es una llave de cierre\n";
+                        break;
+                    case Identificador:
+                        resultado += lexer.lexeme + ": Es un identificador\n";
+                        break;
+                    case Numero:
+                        resultado += lexer.lexeme + ": Es un número\n";
+                        break;
+                    default:
+                        resultado+= "Token: " + tokens + "\n";
+                        break;
+                        
+                }
+            }

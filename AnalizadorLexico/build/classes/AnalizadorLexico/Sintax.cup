@@ -1,0 +1,149 @@
+package AnalizadorLexico;
+import java_cup.runtime.Symbol;
+import java.util.List;
+import java.util.ArrayList;
+import AST.*;
+
+parser code {:
+    private Symbol s;
+
+    public void syntax_error(Symbol s){
+        this.s = s;
+    }
+
+    public Symbol getS(){
+        return this.s;
+    }
+:};
+
+terminal Int, Bool, Void, Main, Return, True, False, Igual, Suma, Resta, Multiplicacion, Division, 
+        ParentesisAbre, ParentesisCierra, PuntoYComa, LlaveAbre, LlaveCierra, Identificador, Numero, 
+        If, Then, Else, While, And, Or, Not, Mayor, Menor, IgualIgual, Modulo, Var, UMENOS;
+
+non terminal NodoPrograma INICIO;
+non terminal List<NodoAST> LISTA_SENTENCIAS;
+non terminal NodoAST SENTENCIA, DECLARACION, ASIGNACION, RETORNO, EXPRESION, IF_SENTENCIA, WHILE_SENTENCIA, BLOQUE;
+
+precedence left Or;
+precedence left And;
+precedence left IgualIgual;
+precedence left Mayor, Menor;
+precedence left Suma, Resta;
+precedence left Multiplicacion, Division, Modulo;
+precedence right Not, UMENOS;
+precedence nonassoc Else; //Esto para evitar que el else se asocie a más de un if o al if equivocado
+
+start with INICIO;
+
+INICIO ::= Int:tipoRetorno Main ParentesisAbre ParentesisCierra LlaveAbre LISTA_SENTENCIAS:sentencias LlaveCierra
+        {: 
+            List<NodoAST> lista = (sentencias == null) ? new ArrayList<>() : (List<NodoAST>)sentencias;
+            RESULT = new NodoPrograma(tipoRetorno.toString(), lista); 
+        :}
+    | Void:tipoRetorno Main ParentesisAbre ParentesisCierra LlaveAbre LISTA_SENTENCIAS:sentencias LlaveCierra
+        {: 
+            List<NodoAST> lista = (sentencias == null) ? new ArrayList<>() : (List<NodoAST>)sentencias;
+            RESULT = new NodoPrograma(tipoRetorno.toString(), lista);
+        :}
+    | Bool:tipoRetorno Main ParentesisAbre ParentesisCierra LlaveAbre LISTA_SENTENCIAS:sentencias LlaveCierra
+        {: 
+            List<NodoAST> lista = (sentencias == null) ? new ArrayList<>() : (List<NodoAST>)sentencias;
+            RESULT = new NodoPrograma(tipoRetorno.toString(), lista);
+        :}
+;
+
+LISTA_SENTENCIAS ::= 
+        {: RESULT = new ArrayList<NodoAST>(); :}
+    | LISTA_SENTENCIAS:lista SENTENCIA:sentencia
+        {: 
+            lista.add((NodoAST)sentencia);
+            RESULT = lista;
+        :}
+;
+
+SENTENCIA ::= DECLARACION:dec {: RESULT = dec; :}
+    | ASIGNACION:asig {: RESULT = asig; :}
+    | RETORNO:ret {: RESULT = ret; :}
+    | IF_SENTENCIA:ifs {: RESULT = ifs; :}
+    | WHILE_SENTENCIA:whiles {: RESULT = whiles; :}
+;
+
+IF_SENTENCIA ::= If ParentesisAbre EXPRESION:cond ParentesisCierra Then BLOQUE:bThen
+        {: RESULT = new NodoIf((NodoAST)cond, (NodoAST)bThen, null); :}
+    | If ParentesisAbre EXPRESION:cond ParentesisCierra Then BLOQUE:bThen Else BLOQUE:bElse
+        {: RESULT = new NodoIf((NodoAST)cond, (NodoAST)bThen, (NodoAST)bElse); :}
+;
+
+WHILE_SENTENCIA ::= While ParentesisAbre EXPRESION:cond ParentesisCierra BLOQUE:bloque
+        {: RESULT = new NodoWhile(cond, bloque); :}
+;
+
+BLOQUE ::= LlaveAbre LISTA_SENTENCIAS:lista LlaveCierra
+        {: RESULT = new NodoBloque(lista); :}
+;
+
+DECLARACION ::= Var Int:tipo Identificador:id PuntoYComa
+        {: 
+            RESULT = new NodoDeclaracion(tipo.toString(), id.toString(), null);
+        :}
+    | Var Int:tipo Identificador:id Igual EXPRESION:expresion PuntoYComa
+        {: 
+            RESULT = new NodoDeclaracion(tipo.toString(), id.toString(), (NodoAST)expresion);
+        :}
+    | Var Bool:tipo Identificador:id PuntoYComa
+        {: 
+            RESULT = new NodoDeclaracion(tipo.toString(), id.toString(), null);
+        :}
+    | Var Bool:tipo Identificador:id Igual EXPRESION:expresion PuntoYComa
+        {: 
+            RESULT = new NodoDeclaracion(tipo.toString(), id.toString(), (NodoAST)expresion);
+        :}
+    | Int:tipo Identificador:id PuntoYComa
+        {: 
+            RESULT = new NodoDeclaracion(tipo.toString(), id.toString(), null);
+        :}
+    | Int:tipo Identificador:id Igual EXPRESION:expresion PuntoYComa
+        {: 
+            RESULT = new NodoDeclaracion(tipo.toString(), id.toString(), (NodoAST)expresion);
+        :}
+    | Bool:tipo Identificador:id PuntoYComa
+        {: 
+            RESULT = new NodoDeclaracion(tipo.toString(), id.toString(), null);
+        :}
+    | Bool:tipo Identificador:id Igual EXPRESION:expresion PuntoYComa
+        {: 
+            RESULT = new NodoDeclaracion(tipo.toString(), id.toString(), (NodoAST)expresion);
+        :}
+;
+
+ASIGNACION ::= Identificador:id Igual EXPRESION:expresion PuntoYComa
+        {:
+            // CORREGIDO: id.toString()
+            RESULT = new NodoAsignacion(id.toString(), (NodoAST)expresion);
+        :}
+;
+
+RETORNO ::= Return EXPRESION:expresion PuntoYComa
+        {:
+            RESULT = new NodoRetorno((NodoAST)expresion);
+        :}
+;
+
+EXPRESION ::= Numero:num {: RESULT = new NodoLiteral(num.toString()); :}
+    | Identificador:id   {: RESULT = new NodoIdentificador(id.toString()); :}
+    | True:valor         {: RESULT = new NodoLiteral(valor.toString()); :}
+    | False:valor        {: RESULT = new NodoLiteral(valor.toString()); :}
+    | EXPRESION:op1 Suma:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | EXPRESION:op1 Resta:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | EXPRESION:op1 Multiplicacion:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | EXPRESION:op1 Division:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | EXPRESION:op1 Modulo:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | EXPRESION:op1 And:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | EXPRESION:op1 Or:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | EXPRESION:op1 Mayor:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | EXPRESION:op1 Menor:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | EXPRESION:op1 IgualIgual:op EXPRESION:op2 {: RESULT = new NodoOperacionBinaria(op1, op.toString(), op2); :}
+    | Not:op EXPRESION:e {: RESULT = new NodoOperacionUnaria(op.toString(), e); :}
+    | Resta:op EXPRESION:e {: RESULT = new NodoOperacionUnaria(op.toString(), e); :} %prec UMENOS
+    | ParentesisAbre EXPRESION:exp ParentesisCierra {: RESULT = exp; :}
+;
